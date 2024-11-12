@@ -1,0 +1,63 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Container Diagram for Heating Home Microservices
+
+Person(user, "User", "A user of the smart home system")
+
+System_Boundary(SmartHomeSystem, "Heating Home System") {
+  Container(apiGateway, "API Gateway", "Selfwritten Gateway, Go gin", "Handles incoming requests and routes them to appropriate services")
+  Container(websocketGateway, "Websocket Gateway", "Nginx", "Hide the internals of websocket implementation from users, routes connections to websocket servers")
+  Container(webscoketNotificationService, "Websocket notification Service", "Go gorilla", "Websocket server with notifictions for users")
+  Container(deviceSupervisionService, "Device Supervision Service", "Go gin", "Manages device operations")
+  Container(temperatureMonitoringService, "Temperature Monitoring Service", "Go fiber", "Monitors and reports the current temperature")
+  Container(userService, "User Service", "DRF python", "Manages user information and authentication")
+  Container(scenarioManagementService, "Scenario Magment Service", "Go gin", "Rest API for the Scenario Management")
+  Container(scenarioCronService, "Scenario Management Service", "Celery python", "Launches automation scenarios on schedule")
+
+  ContainerDb(deviceDb, "Device DB", "PostgreSQL", "Stores device information")
+  ContainerDb(temperatureDb, "Temperature DB", "InfluxDB", "Stores temperature data")
+  ContainerDb(userDb, "User DB", "PostgreSQL", "Stores user information")
+  ContainerDb(notificationDb, "Notification DB", "MongoDB", "Stores notification data")
+  ContainerDb(scenarioDb, "Scenario DB", "PostgreSQL", "Works as engine for Celery and stores scenarios information")
+
+  Container(kafka, "Kafka", "Apache Kafka", "Broker for async communications")
+}
+
+Container_Ext(sensor, "External Sensor", "IoT Device", "Sends information to the smart home system")
+Container_Ext(yetAnotherDevice, "Yet another Device", "IoT Device", "Sends data to the system")
+
+
+
+Rel(user, websocketGateway, "Listens to wss://")
+Rel(websocketGateway, webscoketNotificationService, "Propogates wss:// connect")
+Rel(webscoketNotificationService, notificationDb, "Reads from and writes to")
+Rel(webscoketNotificationService, kafka, "Subscribes to events from", "Kafka topic")
+
+
+Rel(user, apiGateway, "Uses")
+Rel(apiGateway, deviceSupervisionService, "Routes requests to")
+Rel(apiGateway, temperatureMonitoringService, "Routes requests to")
+Rel(apiGateway, userService, "Routes requests to")
+Rel(apiGateway, scenarioManagementService, "Routes requests to")
+
+Rel(deviceSupervisionService, deviceDb, "Reads from and writes to")
+Rel(temperatureMonitoringService, temperatureDb, "Reads from and writes to")
+Rel(userService, userDb, "Reads from and writes to")
+Rel(scenarioManagementService, scenarioDb, "Reads from and writes to")
+Rel(scenarioCronService, scenarioDb, "Reads scenarios from db and run it on schedule")
+
+
+Rel(deviceSupervisionService, kafka, "Publishes events to", "Kafka topic")
+Rel(temperatureMonitoringService, kafka, "Publishes events to", "Kafka topic")
+Rel(scenarioManagementService, kafka, "Subscribes to events from", "Kafka topic")
+Rel(userService, kafka, "Publishes user data changes to", "Kafka topic")
+Rel(scenarioManagementService, kafka, "Subscribes to user data changes from", "Kafka topic")
+Rel(scenarioCronService, kafka, "Sends scenario events", "Kafka topic")
+
+Rel(sensor, deviceSupervisionService, "Sends data to")
+Rel(sensor, temperatureMonitoringService, "Sends temperature data to")
+Rel(yetAnotherDevice, deviceSupervisionService, "Sends data to")
+
+
+@enduml
