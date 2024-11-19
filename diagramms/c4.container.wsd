@@ -3,7 +3,9 @@
 
 title Container Diagram for Heating Home Microservices
 
-Person(user, "User", "A user of the smart home system")
+Person(userWeb, "Web User", "A user of the webapp of the smart home system")
+Person(userMobile, "Mobile User", "A user of the mobile app of the smart home system")
+
 
 System_Boundary(SmartHomeSystem, "Heating Home System") {
   Container(apiGateway, "API Gateway", "Selfwritten Gateway, Go gin", "Handles incoming requests and routes them to appropriate services")
@@ -24,40 +26,44 @@ System_Boundary(SmartHomeSystem, "Heating Home System") {
   Container(kafka, "Kafka", "Apache Kafka", "Broker for async communications")
 }
 
-Container_Ext(sensor, "External Sensor", "IoT Device", "Sends information to the smart home system")
-Container_Ext(yetAnotherDevice, "Yet another Device", "IoT Device", "Sends data to the system")
+Container_Ext(sensor, "External Sensor", "IoT Device", "Sends information to the smart home system", "HTTP")
+Container_Ext(yetAnotherDevice, "Yet another Device", "IoT Device", "Sends data to the system", "HTTP")
 
 
 
-Rel(user, websocketGateway, "Listens to wss://")
-Rel(websocketGateway, webscoketNotificationService, "Propogates wss:// connect")
-Rel(webscoketNotificationService, notificationDb, "Reads from and writes to")
-Rel(webscoketNotificationService, kafka, "Subscribes to events from", "Kafka topic")
+Rel(userWeb, websocketGateway, "Listens to wss://", "WebSocket")
+Rel(userMobile, websocketGateway, "Listens to wss://", "WebSocket")
+
+Rel(websocketGateway, webscoketNotificationService, "Propogates wss:// connect", "WebSocket")
+Rel(webscoketNotificationService, notificationDb, "Reads from and writes to", "Mongo protocol")
+Rel(webscoketNotificationService, kafka, "Subscribes to events from", "Kafka protocol")
 
 
-Rel(user, apiGateway, "Uses")
-Rel(apiGateway, deviceSupervisionService, "Routes requests to")
-Rel(apiGateway, temperatureMonitoringService, "Routes requests to")
-Rel(apiGateway, userService, "Routes requests to")
-Rel(apiGateway, scenarioManagementService, "Routes requests to")
+Rel(userWeb, apiGateway, "Uses", "HTTP")
+Rel(userMobile, apiGateway, "Uses", "HTTP")
 
-Rel(deviceSupervisionService, deviceDb, "Reads from and writes to")
-Rel(temperatureMonitoringService, temperatureDb, "Reads from and writes to")
-Rel(userService, userDb, "Reads from and writes to")
-Rel(scenarioManagementService, scenarioDb, "Reads from and writes to")
-Rel(scenarioCronService, scenarioDb, "Reads scenarios from db and run it on schedule")
+Rel(apiGateway, deviceSupervisionService, "Routes requests to", "HTTP")
+Rel(apiGateway, temperatureMonitoringService, "Routes requests to", "HTTP")
+Rel(apiGateway, userService, "Routes requests to", "HTTP")
+Rel(apiGateway, scenarioManagementService, "Routes requests to", "HTTP")
+
+Rel(deviceSupervisionService, deviceDb, "Reads from and writes to", "Postgres protocol")
+Rel(temperatureMonitoringService, temperatureDb, "Reads from and writes to", "Influx protocol")
+Rel(userService, userDb, "Reads from and writes to", "Postgres protocol")
+Rel(scenarioManagementService, scenarioDb, "Reads from and writes to", "Postgres protocol")
+Rel(scenarioCronService, scenarioDb, "Reads scenarios from db and run it on schedule", "Postgres protocol")
 
 
-Rel(deviceSupervisionService, kafka, "Publishes events to", "Kafka topic")
-Rel(temperatureMonitoringService, kafka, "Publishes events to", "Kafka topic")
-Rel(scenarioManagementService, kafka, "Subscribes to events from", "Kafka topic")
-Rel(userService, kafka, "Publishes user data changes to", "Kafka topic")
-Rel(scenarioManagementService, kafka, "Subscribes to user data changes from", "Kafka topic")
-Rel(scenarioCronService, kafka, "Sends scenario events", "Kafka topic")
+Rel(deviceSupervisionService, kafka, "Publishes events to", "Kafka protocol")
+Rel(temperatureMonitoringService, kafka, "Publishes events to", "Kafka protocol")
+Rel(scenarioManagementService, kafka, "Subscribes to events from", "Kafka protocol")
+Rel(userService, kafka, "Publishes user data changes to", "Kafka protocol")
+Rel(scenarioManagementService, kafka, "Subscribes to user data changes from", "Kafka protocol")
+Rel(scenarioCronService, kafka, "Sends scenario events", "Kafka protocol")
 
-Rel(sensor, deviceSupervisionService, "Sends data to")
-Rel(sensor, temperatureMonitoringService, "Sends temperature data to")
-Rel(yetAnotherDevice, deviceSupervisionService, "Sends data to")
+Rel(sensor, deviceSupervisionService, "Sends data to", "HTTP")
+Rel(sensor, temperatureMonitoringService, "Sends temperature data to", "HTTP")
+Rel(yetAnotherDevice, deviceSupervisionService, "Sends data to", "HTTP")
 
 
 @enduml

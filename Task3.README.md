@@ -31,11 +31,18 @@
    - `id` — pk.
    - `name` — название типа устройства.
 
+### 4. DeviceСonfig
+   - `id` — pk.
+   - `name` — название конфига.
+   - `config` - конфиг.
+
 ### 5. TelemetryData
    - `id` — pk.
    - `device_id` — идентификатор устройства, которое сгенерировало телеметрию, fk:Device.
+   - `analyzable_data` - numeric данные для анализа
+   - `data_type` - тип данных (Temperautre/Seconds etc)
    - `timestamp` — временная метка записи.
-   - `data` — jsonb данные телеметрии.
+   - `extended_data` — jsonb данные телеметрии.
 
 ### 6. ScenarioSchedule
    - `id` - pk.
@@ -49,18 +56,22 @@
 
 ## Связи между сущностями
 
-1. User-House: one-to-many.
-2. House-Device: one-to-many.
-3. Device-DeviceType: one-to-many.
+1. House-Device: one-to-many.
+2. Device-DeviceType: many-to-one.
+3. Device-DeviceConfig: many-to-one.
 4. Device-TelemetryData: one-to-many.
-5. House-ScenarioSchedule: one-to-many.
+5. House-ScenarioSchedule: many-to-many.
 6. Device-ScenarioSchedule: many-to-many
+7. User-UserHouse: many-to-many
+8. House-UserHouse: many-to-many
 
 ## Объяснение диаграммы
 
 - **User**: Содержит информацию о пользователях.
-- **House**: Связан с пользователем через fk.
+- **House**: Связан с пользователем через UserHouse.
+- **UserHouse**: many-to-many таблица для User & House
 - **Device**: Связан с домом и устройством через fk'ии, и множествами сценариев через ScenarioScheduleDevice, many-to-many таблицу.
 - **DeviceType**: Содержит информацию о типах устройств.
+- **DeviceConfig**: Содержить конфигурацию для устройства.
 - **TelemetryData**: Связан с устройством через fk.
 - **ScenarioSchedule**: Связан с домом через fk, так же со множеством устройств через ScenarioScheduleDevice

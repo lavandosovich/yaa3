@@ -3,12 +3,15 @@
 
  title C4 Context Diagram for Heating Home Monolith
 
- Person(user, "User", "User of the smart home")
+ Person(webUser, "Web User", "Web User of the smart home")
+ Person(mobileUser, "Mobile User", "Mobile user of the smart home")
+
  System_Ext(sensor, "Sensor", "Temperature sensor in home")
 
- System(HeatingHomeMonolith, "Heating Home Monolith", "Fetches data from devices and monitors temperature in smart home")
+ System(HeatingHomeMonolith, "Heating Home Monolith", "[Java Spring + Postgres] Fetches data from devices and monitors temperature in smart home", "hvhv")
  
 
- Rel(user, HeatingHomeMonolith, "Uses")
+ Rel(webUser, HeatingHomeMonolith, "Uses")
+ Rel(mobileUser, HeatingHomeMonolith, "Uses")
  Rel(HeatingHomeMonolith, sensor, "Fetches data")
 @enduml
